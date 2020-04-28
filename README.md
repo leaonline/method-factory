@@ -43,7 +43,9 @@ fancyMethod.call() // 'fancy'
 
 We support various ways to validate an input schema. To **decouple** schema definition from instantiation, we introduced a `shemaFactory`, which
 is basically a function that creates your schema for this collection. This also ensures, that
-methods don't share the same schema instances:
+methods don't share the same schema instances.
+
+#### Using SimpleSchema
 
 ```javascript
 import { createMethodFactory } from 'meteor/leaonline:method-factory'
@@ -65,7 +67,7 @@ fancyMethod.call({ title: 'Mr.x' }) // Hello, Mr.x
 As you can see, there is **no need to pass a `validate` function** as it is internally built using the `schemaFactory`
 and the given `schema`.
 
-##### Overriding `validate` when using schema
+#### Overriding `validate` when using schema
 
 You can also override the internal `validate` when using `schema` by passing a `validate` function.
 This, however, disables the schema validation and is then your responsibility:
@@ -95,6 +97,33 @@ customValidationMethod.call({ title: 'Dr.z' }) // err
 
 If none of these cover your use case, you can still use mixins.
 
+#### Using check
+
+You can also use Meteor's builtin `check` and `Match` for schema validation:
+
+```javascript
+import { check } from 'meteor/check'
+import { createMethodFactory } from 'meteor/leaonline:method-factory'
+
+const schemaFactory = schema => ({
+  validate (args) {
+    check(args, schema)
+  }
+})
+
+const createMethod = createMethodFactory({ schemaFactory })
+const fancyMethod = createMethod({
+  name: 'fancyMethod',
+  schema: { title: String },
+  run: function({ title }) {
+    return `Hello, ${title}`
+  }
+})
+fancyMethod.call({ title: 'Mr.x' }) // Hello, Mr.x
+```
+
+Note, that some definitions for 
+`SimpleSchema` and `check`/`Match` may differ.
 
 ### With custom `ValidatedMethod`
 

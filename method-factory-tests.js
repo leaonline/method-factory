@@ -6,6 +6,7 @@ import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { createMethodFactory } from 'meteor/leaonline:method-factory'
 import { expect } from 'chai'
 import SimpleSchema from 'simpl-schema'
+
 const schemaFactory = def => new SimpleSchema(def)
 const methodExists = name => expect(Meteor.server.method_handlers[name]).to.be.a('function')
 
@@ -70,9 +71,33 @@ describe('with schema', function () {
     // expected pass
     expect(method.call({ title: 'Mr.x' })).to.equal('Hello, Mr.x')
   })
+  it('also works with check/match', function () {
+    const checkMatchFactory = schema => ({
+      validate (args) {
+        check(args, schema)
+      }
+    })
+
+    const createMethod = createMethodFactory({ schemaFactory: checkMatchFactory })
+    const methodArgs = { name: Random.id(), schema: { title: String }, run: ({ title }) => `Hello, ${title}` }
+    const method = createMethod(methodArgs)
+
+    // expected fails
+    expect(() => method.call()).to.throw()
+    expect(() => method.call({})).to.throw()
+    expect(() => method.call({ foo: 'bar' })).to.throw()
+
+    // expected pass
+    expect(method.call({ title: 'Mr.x' })).to.equal('Hello, Mr.x')
+  })
   it('allows to override schema validation with a custom validate function', function () {
     const createMethod = createMethodFactory({ schemaFactory })
-    const methodArgs = { name: Random.id(), validate: () => {}, schema: { title: String }, run: ({ title }) => `Hello, ${title}` }
+    const methodArgs = {
+      name: Random.id(),
+      validate: () => {},
+      schema: { title: String },
+      run: ({ title }) => `Hello, ${title}`
+    }
     const method = createMethod(methodArgs)
 
     expect(method.call({})).to.equal('Hello, undefined')
