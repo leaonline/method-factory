@@ -38,16 +38,20 @@ export const createMethodFactory = ({ custom, mixins, schemaFactory } = {}) => {
    * @return {ValidatedMethod}
    */
 
-  return ({ name, schema, validate, run, mixins, applyOptions, ...args }) => {
-    check(name, String)
-    check(schema, isRequiredSchema)
-    check(validate, isRequiredValidate)
-    check(run, Function)
-    check(applyOptions, isMaybeApplyOptions)
-    check(mixins, Match.Maybe([Function]))
+  return options => {
+    check(options, Match.ObjectIncluding({
+      name: String,
+      schema: options.validate ? Match.Maybe(isRequiredSchema) : isRequiredSchema,
+      validate: options.schema ? Match.Maybe(isRequiredValidate) : isRequiredValidate,
+      run: Function,
+      applyOptions: isMaybeApplyOptions,
+      mixins: Match.Maybe([Function])
+    }))
+
+    const { name, schema, validate, run, mixins, applyOptions, ...args } = options
 
     let validateFn = validate
-    if (!validate && schemaFactory) {
+    if (!validateFn && schemaFactory) {
       const validationSchema = schemaFactory(schema)
       // we fallback to a plain object to support Meteor.call(name, callback)
       // for schemas that contain no property: { schema: {} }
