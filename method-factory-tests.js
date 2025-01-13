@@ -9,6 +9,15 @@ import SimpleSchema from 'simpl-schema'
 
 const schemaFactory = def => new SimpleSchema(def)
 const methodExists = name => expect(Meteor.server.method_handlers[name]).to.be.a('function')
+const expectThrow = async ({ fn, message, details }) => {
+  try {
+    await fn()
+    expect.fail()
+  } catch (e) {
+    if (message) expect(e.message).to.include(message)
+    if (details) expect(e.details).to.deep.equal(details)
+  }
+}
 
 function testMixin (options) {
   check(options.foo, String)
@@ -25,7 +34,7 @@ class CustomMethod extends ValidatedMethod {
 }
 
 describe('defaults, no params', function () {
-  it('creates a validated method by default', function () {
+  it('creates a validated method by default', async () => {
     const createMethod = createMethodFactory()
     const someMethod = createMethod({
       name: 'someMethod',
@@ -34,7 +43,7 @@ describe('defaults, no params', function () {
       applyOptions: { noRetry: true }
     })
     methodExists('someMethod')
-    expect(someMethod.call()).to.equal('hi')
+    expect(await someMethod.call()).to.equal('hi')
   })
 })
 
@@ -58,20 +67,20 @@ describe('with schema', function () {
     expectThrow(1)
     expectThrow('foo')
   })
-  it('allows to define schema as validation base', function () {
+  it('allows to define schema as validation base', async () => {
     const createMethod = createMethodFactory({ schemaFactory })
     const methodArgs = { name: Random.id(), schema: { title: String }, run: ({ title }) => `Hello, ${title}` }
     const method = createMethod(methodArgs)
 
     // expected fails
-    expect(() => method.call()).to.throw()
-    expect(() => method.call({})).to.throw()
-    expect(() => method.call({ foo: 'bar' })).to.throw()
+    await expectThrow({ fn: () => method.call() })
+    await expectThrow({ fn: () => method.call({}) })
+    await expectThrow({ fn: () => method.call({ foo: 'bar'}) })
 
     // expected pass
-    expect(method.call({ title: 'Mr.x' })).to.equal('Hello, Mr.x')
+    expect(await method.call({ title: 'Mr.x' })).to.equal('Hello, Mr.x')
   })
-  it('also works with check/match', function () {
+  it('also works with check/match', async () => {
     const checkMatchFactory = schema => ({
       validate (args) {
         check(args, schema)
@@ -83,14 +92,14 @@ describe('with schema', function () {
     const method = createMethod(methodArgs)
 
     // expected fails
-    expect(() => method.call()).to.throw()
-    expect(() => method.call({})).to.throw()
-    expect(() => method.call({ foo: 'bar' })).to.throw()
+    await expectThrow({ fn: () => method.call() })
+    await expectThrow({ fn: () => method.call({}) })
+    await expectThrow({ fn: () => method.call({ foo: 'bar'}) })
 
     // expected pass
-    expect(method.call({ title: 'Mr.x' })).to.equal('Hello, Mr.x')
+    expect(await method.call({ title: 'Mr.x' })).to.equal('Hello, Mr.x')
   })
-  it('allows to override schema validation with a custom validate function', function () {
+  it('allows to override schema validation with a custom validate function', async () => {
     const createMethod = createMethodFactory({ schemaFactory })
     const methodArgs = {
       name: Random.id(),
@@ -100,7 +109,7 @@ describe('with schema', function () {
     }
     const method = createMethod(methodArgs)
 
-    expect(method.call({})).to.equal('Hello, undefined')
+    expect(await method.call({})).to.equal('Hello, undefined')
   })
 })
 

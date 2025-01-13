@@ -54,6 +54,7 @@ export const createMethodFactory = ({ custom, mixins, schemaFactory } = {}) => {
     let validateFn = validate
     if (!validateFn && schemaFactory) {
       const validationSchema = schemaFactory(schema, options.schemaOptions)
+
       // we fallback to a plain object to support Meteor.call(name, callback)
       // for schemas that contain no property: { schema: {} }
       validateFn = function validate (document = {}) {

@@ -24,6 +24,7 @@ Package.onTest(function (api) {
     'simpl-schema': '1.13.1'
   })
 
+  api.versionsFrom(['3.0.1'])
   api.use('ecmascript')
   api.use('mongo')
   api.use('random')
