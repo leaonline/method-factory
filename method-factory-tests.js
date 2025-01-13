@@ -75,7 +75,7 @@ describe('with schema', function () {
     // expected fails
     await expectThrow({ fn: () => method.call() })
     await expectThrow({ fn: () => method.call({}) })
-    await expectThrow({ fn: () => method.call({ foo: 'bar'}) })
+    await expectThrow({ fn: () => method.call({ foo: 'bar' }) })
 
     // expected pass
     expect(await method.call({ title: 'Mr.x' })).to.equal('Hello, Mr.x')
@@ -94,7 +94,7 @@ describe('with schema', function () {
     // expected fails
     await expectThrow({ fn: () => method.call() })
     await expectThrow({ fn: () => method.call({}) })
-    await expectThrow({ fn: () => method.call({ foo: 'bar'}) })
+    await expectThrow({ fn: () => method.call({ foo: 'bar' }) })
 
     // expected pass
     expect(await method.call({ title: 'Mr.x' })).to.equal('Hello, Mr.x')

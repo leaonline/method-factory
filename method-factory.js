@@ -42,6 +42,7 @@ export const createMethodFactory = ({ custom, mixins, schemaFactory } = {}) => {
     check(options, Match.ObjectIncluding({
       name: String,
       schema: options.validate ? Match.Maybe(isRequiredSchema) : isRequiredSchema,
+      schemaOptions: Match.Maybe(isRequiredSchema),
       validate: options.schema ? Match.Maybe(isRequiredValidate) : isRequiredValidate,
       run: Function,
       applyOptions: isMaybeApplyOptions,
@@ -52,11 +53,12 @@ export const createMethodFactory = ({ custom, mixins, schemaFactory } = {}) => {
 
     let validateFn = validate
     if (!validateFn && schemaFactory) {
-      const validationSchema = schemaFactory(schema, options)
+      const validationSchema = schemaFactory(schema, options.schemaOptions)
+
       // we fallback to a plain object to support Meteor.call(name, callback)
       // for schemas that contain no property: { schema: {} }
       validateFn = function validate (document = {}) {
-        validationSchema.validate(document)
+        validationSchema.validate(document, options.schemaOptions)
       }
     }
 
