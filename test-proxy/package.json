@@ -9,7 +9,7 @@
     "lint:code-fix": "npm run setup && standardx --fix ../ | snazzy",
     "lint:markdown": "markdownlint \"./packages/method-factory/**/*.md\" --config ./.markdownlint.json",
     "lint:markdown-fix": "markdownlint --fix \"./packages/method-factory/**/*.md\" --config ./.markdownlint.json",
-    "test": "METEOR_PACKAGE_DIRS='../' TEST_BROWSER_DRIVER=puppeteer meteor test-packages --once --extra-packages jkuester:http --driver-package meteortesting:mocha ../ --port=7667",
+    "test": "METEOR_PACKAGE_DIRS='../' TEST_CLIENT=0 TEST_BROWSER_DRIVER=puppeteer meteor test-packages --once --extra-packages jkuester:http --driver-package meteortesting:mocha ../ --port=7667",
     "test:watch": "METEOR_PACKAGE_DIRS='../' TEST_BROWSER_DRIVER=puppeteer TEST_WATCH=1 meteor test-packages --extra-packages jkuester:http --driver-package meteortesting:mocha ../ --port=7667",
     "test:browser": "METEOR_PACKAGE_DIRS='../' TEST_WATCH=1 meteor test-packages --extra-packages jkuester:http --driver-package meteortesting:mocha ../ --port=7667",
     "test:coverage": "meteor npm run setup && TEST_BROWSER_DRIVER=puppeteer COVERAGE=1 COVERAGE_OUT_HTML=1 COVERAGE_OUT_LCOVONLY=1 COVERAGE_APP_FOLDER=$(pwd)/ meteor test-packages --once --driver-package meteortesting:mocha --extra-packages jkuester:http,lmieulet:meteor-legacy-coverage,lmieulet:meteor-coverage $(pwd)/packages/method-factory --port=7667"

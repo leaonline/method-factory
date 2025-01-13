@@ -31,5 +31,5 @@ Package.onTest(function (api) {
   api.use('mdg:validated-method@1.3.0')
   api.use('meteortesting:mocha@2.1.0 || 3.2.0')
   api.use('leaonline:method-factory')
-  api.mainModule('method-factory-tests.js')
+  api.mainModule('method-factory-tests.js', 'server')
 })
