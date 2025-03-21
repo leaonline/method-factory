@@ -5,7 +5,7 @@ import { Random } from 'meteor/random'
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 import { createMethodFactory } from 'meteor/leaonline:method-factory'
 import { expect } from 'chai'
-import SimpleSchema from 'simpl-schema'
+import SimpleSchema from 'meteor/aldeed:simple-schema'
 
 const schemaFactory = def => new SimpleSchema(def)
 const methodExists = name => expect(Meteor.server.method_handlers[name]).to.be.a('function')
@@ -101,15 +101,44 @@ describe('with schema', function () {
   })
   it('allows to override schema validation with a custom validate function', async () => {
     const createMethod = createMethodFactory({ schemaFactory })
+    let count = 0
     const methodArgs = {
       name: Random.id(),
-      validate: () => {},
+      validate: () => {
+        if (count++ > 0) throw new Error('validate failed')
+      },
+      schema: { title: String },
+      run: ({ title }) => `Hello, ${title}`
+    }
+    const method = createMethod(methodArgs)
+    const userId = Random.id()
+
+    expect(await method.call({ userId })).to.equal('Hello, undefined')
+    await expectThrow({
+      fn: () => method.call({ title: 'Mr.x' }),
+      message: 'validate failed',
+      details: undefined
+    })
+  })
+  it('supports the validate method to return boolean values', async () => {
+    const createMethod = createMethodFactory({ schemaFactory })
+    let count = 0
+    const methodArgs = {
+      name: Random.id(),
+      validate: () => {
+        return count++ < 1
+      },
       schema: { title: String },
       run: ({ title }) => `Hello, ${title}`
     }
     const method = createMethod(methodArgs)
 
-    expect(await method.call({})).to.equal('Hello, undefined')
+    expect(await method.call({ title: 'Mr.x' })).to.equal('Hello, Mr.x')
+    await expectThrow({
+      fn: () => method.call({ title: 'Mr.x' }),
+      message: 'validationFailed [422]',
+      details: { userId: null, method: methodArgs.name }
+    })
   })
 })
 

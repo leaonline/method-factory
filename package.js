@@ -19,16 +19,14 @@ Package.onUse(function (api) {
 })
 
 Package.onTest(function (api) {
-  Npm.depends({
-    chai: '4.2.0',
-    'simpl-schema': '1.13.1'
-  })
+  Npm.depends({ chai: '4.2.0' })
 
   api.versionsFrom(['3.0.1'])
   api.use('ecmascript')
   api.use('mongo')
   api.use('random')
   api.use('mdg:validated-method@1.3.0')
+  api.use('aldeed:simple-schema@1.13.0 || 2.0.0')
   api.use('meteortesting:mocha@2.1.0 || 3.2.0')
   api.use('leaonline:method-factory')
   api.mainModule('method-factory-tests.js', 'server')
