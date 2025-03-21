@@ -51,8 +51,23 @@ export const createMethodFactory = ({ custom, mixins, schemaFactory } = {}) => {
 
     const { name, schema, validate, run, mixins, applyOptions, ...args } = options
 
-    let validateFn = validate
-    if (!validateFn && schemaFactory) {
+    let validateFn
+    const hasValidate = typeof validate === 'function'
+
+    if (hasValidate) {
+      validateFn = function (...args) {
+        const isValid = validate.apply(this, args)
+        if (isValid === true) return
+        if (isValid === false) {
+          throw new Meteor.Error('422', 'validationFailed', {
+            userId: this.userId,
+            method: name
+          })
+        }
+      }
+    }
+
+    if (!hasValidate && schemaFactory) {
       const validationSchema = schemaFactory(schema, options.schemaOptions)
 
       // we fallback to a plain object to support Meteor.call(name, callback)
@@ -61,6 +76,7 @@ export const createMethodFactory = ({ custom, mixins, schemaFactory } = {}) => {
         validationSchema.validate(document, options.schemaOptions)
       }
     }
+
 
     const methodArgs = Object.assign({ name, validate: validateFn, run }, args)
     if (applyOptions) methodArgs.applyOptions = applyOptions
