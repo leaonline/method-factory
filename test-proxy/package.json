@@ -21,7 +21,7 @@
     "@babel/eslint-parser": "^7.12.1",
     "chai": "^4.2.0",
     "eslint-plugin-security": "^1.4.0",
-    "puppeteer": "^18.2.1",
+    "puppeteer": "^24.4.0",
     "snazzy": "^9.0.0",
     "standardx": "^7.0.0"
   },
