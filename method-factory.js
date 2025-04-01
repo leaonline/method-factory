@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor'
 import { check, Match } from 'meteor/check'
 import { ValidatedMethod } from 'meteor/mdg:validated-method'
 
@@ -51,11 +52,28 @@ export const createMethodFactory = ({ custom, mixins, schemaFactory } = {}) => {
 
     const { name, schema, validate, run, mixins, applyOptions, ...args } = options
 
-    let validateFn = validate
-    if (!validateFn && schemaFactory) {
+    let validateFn
+    const hasValidate = typeof validate === 'function'
+
+    if (hasValidate) {
+      // We wrap the validate function to allow for a return value of Boolean type,
+      // which SimpleSchema does not support.
+      validateFn = function (...args) {
+        const isValid = validate.apply(this, args)
+        if (isValid === true) return
+        if (isValid === false) {
+          throw new Meteor.Error('422', 'validationFailed', {
+            userId: this.userId,
+            method: name
+          })
+        }
+      }
+    }
+
+    if (!hasValidate && schemaFactory) {
       const validationSchema = schemaFactory(schema, options.schemaOptions)
 
-      // we fallback to a plain object to support Meteor.call(name, callback)
+      // We fall back to a plain object to support Meteor.call(name, callback)
       // for schemas that contain no property: { schema: {} }
       validateFn = function validate (document = {}) {
         validationSchema.validate(document, options.schemaOptions)
