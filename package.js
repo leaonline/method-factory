@@ -1,7 +1,7 @@
 /* eslint-env meteor */
 Package.describe({
   name: 'leaonline:method-factory',
-  version: '2.0.1',
+  version: '2.0.2',
   // Brief, one-line summary of the package.
   summary: 'Create validated Meteor methods. Lightweight. Simple.',
   // URL to the Git repository containing the source code for this package.
