@@ -25,7 +25,7 @@ export const createMethodFactory = ({ custom, mixins, schemaFactory } = {}) => {
   check(mixins, Match.Maybe([Function]))
 
   const ProductConstructor = custom || ValidatedMethod
-  const isRequiredSchema = schemaFactory ? Object : Match.Maybe(Object)
+  const isRequiredSchema = schemaFactory ? Match.OneOf(Object, null) : Match.Maybe(Object)
   const isRequiredValidate = schemaFactory ? Match.Maybe(Function) : Function
   const abstractFactoryLevelMixins = (mixins && mixins.length > 0) ? mixins : []
 
@@ -71,12 +71,19 @@ export const createMethodFactory = ({ custom, mixins, schemaFactory } = {}) => {
     }
 
     if (!hasValidate && schemaFactory) {
-      const validationSchema = schemaFactory(schema, options.schemaOptions)
+      // for short-hand definition of pass-all schema
+      // we allow schema to be null, which then
+      // prevents any check in validate
+      const validationSchema = schema === null
+        ? null
+        : schemaFactory(schema, options.schemaOptions)
 
       // We fall back to a plain object to support Meteor.call(name, callback)
       // for schemas that contain no property: { schema: {} }
       validateFn = function validate (document = {}) {
-        validationSchema.validate(document, options.schemaOptions)
+        if (validationSchema !== null) {
+          validationSchema.validate(document, options.schemaOptions)
+        }
       }
     }
 
